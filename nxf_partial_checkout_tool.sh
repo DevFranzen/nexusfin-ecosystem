@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Configuration
 REPO_URL="https://github.com/DevFranzen/nexusfin-ecosystem.git"
@@ -16,7 +16,12 @@ fi
 
 # 2. Find all services (two levels deep under /apps)
 echo "Scanning for services..."
-mapfile -t app_paths < <(find "$APPS_DIR" -mindepth 2 -maxdepth 2 -type d | sort)
+
+# Portable alternative to mapfile - works on both macOS and Linux
+app_paths=()
+while IFS= read -r line; do
+    app_paths+=("$line")
+done < <(find "$APPS_DIR" -mindepth 2 -maxdepth 2 -type d | sort)
 
 if [ ${#app_paths[@]} -eq 0 ]; then
     echo "No services found in subdirectories of '$APPS_DIR'."
@@ -38,17 +43,20 @@ perform_checkout() {
 
     echo ">> Downloading $selected_path..."
     mkdir -p "$dest_path"
-    
+
     # Use subshell (cd ...) to avoid changing script's working directory
     (
         cd "$dest_path" || exit
-        git clone --filter=blob:none --no-checkout "$REPO_URL" . &>/dev/null
-        git sparse-checkout init --cone &>/dev/null
-        git sparse-checkout set "$selected_path" &>/dev/null
-        git checkout main &>/dev/null
+        git clone --filter=blob:none --no-checkout "$REPO_URL" . >/dev/null 2>&1
+        git sparse-checkout init --cone >/dev/null 2>&1
+        git sparse-checkout set "$selected_path" >/dev/null 2>&1
+        git checkout main >/dev/null 2>&1
     )
-    
-    if [ $? -eq 0 ]; then
+
+    # Capture exit status of subshell
+    local exit_code=$?
+
+    if [ $exit_code -eq 0 ]; then
         echo ">> Success!"
     else
         echo ">> Error: Checkout failed for $service_name."
