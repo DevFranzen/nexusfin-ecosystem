@@ -1,27 +1,28 @@
-# Context — Broker: Marketdata Importer (Gateway)
+# Context — Broker: Marketdata Importer
 
 Service: `br-marketdata-importer`
 Location: `/apps/broker/br-marketdata-importer`
-Role: Broker-side gateway that imports real-time market data and execution events from the Exchange distribution layer and publishes them into the Broker Kafka namespace; supports historical backfill requests initiated by Broker services.
+Role: Broker-side service that imports real-time market data and execution events from Exchange (via `br-router` proxy) and publishes them into the Broker Kafka namespace; supports historical backfill requests.
 
 Responsibilities:
 (1) Real-time ingestion & forwarding
-- Maintain a persistent socket/WebSocket connection to the Exchange distributor (`ex-marketdata-distributor`) to receive live price ticks and executed-order events.
-- Normalize incoming events and publish them to Broker Kafka topics for downstream services.
-- Detect missing sequence ranges or timestamp gaps and automatically request missing data from the Exchange.
+- Request market data stream from Exchange via `br-router` proxy
+- Normalize incoming events and publish them to Broker Kafka topics for downstream services
+- Detect missing sequence ranges and automatically request backfill data
 
 (2) Historical backfill / resynchronization
-- Accept REST requests from Broker services to request historical ticks for a symbol/time range (for recovery after offline periods).
-- Forward backfill requests to the Exchange and stream retrieved historical data into Broker topics, preserving original timestamps and ordering.
+- Accept REST requests from Broker services to request historical ticks for a symbol/time range
+- Forward backfill requests to Exchange via `br-router`
+- Stream retrieved historical data into Broker topics, preserving original timestamps and ordering
 
-(3) Scalability & resilience
-- Persist offsets and minimal replay buffers for resumed consumption after restarts.
-- Support batching and configurable write-through behavior for Kafka to balance latency and throughput.
+(3) Resilience
+- Persist offsets and minimal replay buffers for resumed consumption after restarts
+- Handle connection failures and reconnection via `br-router`
 
 Inputs:
-- Socket/WebSocket: live ticks and execution events from Exchange distribution layer
-- REST: backfill requests from broker-side services (symbol, start, end, broker-id)
-- Admin: subscription and ACL configuration
+- WebSocket/Stream: Live ticks and execution events from Exchange (proxied through `br-router`)
+- REST: Backfill requests from broker-side services (symbol, start, end)
+- Configuration: Symbols to subscribe to, gap detection settings
 
 Outputs:
 - Broker Kafka topics:
@@ -30,15 +31,25 @@ Outputs:
   - `broker.market.backfill.{symbol}` — optional backfill stream or same topic with backfill metadata
 
 Design & Operational Notes:
-- Gap detection and backfill: detect missing messages using sequence numbers or monotonic timestamps; request missing ranges with exponential backoff and bounded retries.
-- Ordering guarantees: ensure backfilled records are published before resuming live stream to maintain chronological order for downstream consumers.
-- Backpressure & buffers: implement bounded buffers and backpressure signals; provide metrics for buffer saturation to prevent data loss.
-- Schema management: use a schema registry (AVRO/Protobuf/JSON Schema) and versioning for tick and execution payloads.
-- Observability: metrics for consumed messages/sec, published messages/sec, detected gaps, backfill latency, and Kafka publish failures.
+- **Architecture**: ALL communication with Exchange goes through `br-router` proxy (never direct connection)
+- Gap detection algorithm:
+  1. Maintain in-memory map: symbol → last_sequence_number
+  2. On each received tick:
+     - If sequence_number != last_sequence_number + 1:
+       - Log gap detected: [last_sequence_number, sequence_number]
+       - Queue backfill request
+     - Update last_sequence_number
+  3. Backfill request via `br-router` to Exchange
+  4. Resume live stream after backfill completes
+- Gap detection configuration: To be defined in ADRs (detection window, retry policies)
+- Ordering guarantees: Ensure backfilled records are published before resuming live stream to maintain chronological order
+- Schema management: To be defined in ADRs (AVRO/Protobuf/JSON Schema)
+- Observability: Metrics for consumed messages/sec, published messages/sec, detected gaps, backfill latency
 
 Security & Privacy:
-- Authenticate to Exchange endpoints and authorize backfill requests; propagate broker identity for scoped retrieval.
-- Enforce TLS for socket connections and require authenticated API calls.
+- Authentication handled by `br-router` (manages Exchange tokens)
+- No direct Exchange connectivity from this service
 
 Demo Guidance:
-- Provide a sample CLI or script that simulates a disconnected broker, then issues a backfill request and verifies ordered replay into Broker Kafka.
+- Provide sample script that simulates gap detection and backfill
+- Show ordered replay into Broker Kafka
