@@ -29,11 +29,19 @@ The following context files are created for services present under `/apps/`:
   - [br-order-gateway](docs/context/br-order-gateway.context.md)
   - [br-marketdata-store](docs/context/br-marketdata-store.context.md)
   - [br-portfolio-manager](docs/context/br-portfolio-manager.context.md)
+  - [br-router](docs/context/br-router.context.md)
+  - [br-account-service](docs/context/br-account-service.context.md)
+  - [br-gateway](docs/context/br-gateway.context.md)
+  - [br-infra](docs/context/br-infra.context.md)
 - exchange:
   - [ex-matching-engine](docs/context/ex-matching-engine.context.md)
   - [ex-order-manager](docs/context/ex-order-manager.context.md)
   - [ex-world-engine](docs/context/ex-world-engine.context.md)
   - [ex-marketdata-distributor](docs/context/ex-marketdata-distributor.context.md)
+  - [ex-gateway](docs/context/ex-gateway.context.md)
+  - [ex-infra](docs/context/ex-infra.context.md)
+  - [ex-company-registry](docs/context/ex-company-registry.context.md)
+  - [ex-price-generator](docs/context/ex-price-generator.context.md)
 
 
 ## Primary Tech Stack
