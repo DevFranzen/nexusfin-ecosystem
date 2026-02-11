@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  redpanda:
+    image: docker.redpanda.com/redpandadata/redpanda:latest
+    container_name: redpanda-broker
+    # Command to configure Redpanda for a single-node local setup
+    command:
+      - redpanda start
+      - --smp ${REDPANDA_SMP:-1}
+      - --memory ${REDPANDA_MEMORY:-512M}
+      - --overprovisioned
+      - --node-id ${REDPANDA_NODE_ID:-0}     
+      - --check=false
+      - --reserve-memory ${REDPANDA_RESERVE_MEMORY:-0M}
+      - --kafka-addr PLAINTEXT://0.0.0.0:29092,OUTSIDE://0.0.0.0:9092
+      - --advertise-kafka-addr PLAINTEXT://redpanda:29092,OUTSIDE://localhost:9092
+      - --pandaproxy-addr 0.0.0.0:8082
+      - --advertise-pandaproxy-addr localhost:8082
+      - --schema-registry-addr 0.0.0.0:8081
+      - --rpc-addr 0.0.0.0:33145
+      - --advertise-rpc-addr redpanda:33145
+    ports:
+      - "9092:9092"     # Kafka API (External access for your apps)
+      - "8081:8081"     # Schema Registry API
+      - "8082:8082"     # Pandaproxy (HTTP Proxy API)
+      - "9644:9644"     # Admin API (Used by rpk and monitoring)
+    healthcheck:
+      test: ["CMD-SHELL", "rpk cluster status"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  console:
+    image: docker.redpanda.com/redpandadata/console:latest
+    container_name: redpanda-console
+    depends_on:
+      redpanda:
+        condition: service_healthy
+    environment:
+      # We use environment variables directly for simple setups to avoid YAML nesting errors
+      KAFKA_BROKERS: "redpanda:29092"
+      SCHEMA_REGISTRY_ENABLED: "true"
+      SCHEMA_REGISTRY_URLS: "http://redpanda:8081"
+      REDPANDA_ADMINAPI_ENABLED: "true"
+      REDPANDA_ADMINAPI_URLS: "http://redpanda:9644"
+    ports:
+      - "8088:8080"     # Web UI

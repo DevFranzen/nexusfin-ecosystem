@@ -1,0 +1,26 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_MODEL=${AI_MODEL:-embeddinggemma}
+    entrypoint: /bin/sh
+    command:
+      - "-c"
+      - |
+        ollama serve & 
+        sleep 5
+        echo "Lade Modell: $$OLLAMA_MODEL"
+        ollama pull $$OLLAMA_MODEL
+        wait
+    healthcheck:
+      test: ["CMD-SHELL", "ollama list | grep -q \"O$$LLAMA_MODEL\""]
+      interval: 10s
+      timeout: 5s
+      retries: 20 # Gibt dir genug Zeit für den Download
+
+volumes:
+  ollama_data:
