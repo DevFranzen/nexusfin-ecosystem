@@ -15,8 +15,7 @@ import java.util.concurrent.ExecutionException;
 @ConditionalOnProperty(
         prefix = "spring.ai.vectorstore.qdrant",
         name = "validate-schema-dimension",
-        havingValue = "true",
-        matchIfMissing = false
+        havingValue = "true"
 )
 public class QdrantConfig {
 

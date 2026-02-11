@@ -21,8 +21,7 @@ import org.springframework.context.annotation.Primary;
 @ConditionalOnProperty(
         prefix = "spring.ai.dedicated-embedding",
         name = "enabled",
-        havingValue = "true",
-        matchIfMissing = false
+        havingValue = "true"
 )
 public class EmbeddingConfig {
 
