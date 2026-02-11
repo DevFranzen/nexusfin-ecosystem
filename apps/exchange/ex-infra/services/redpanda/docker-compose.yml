@@ -1,9 +1,9 @@
-version: '3.8'
-
 services:
   redpanda:
     image: docker.redpanda.com/redpandadata/redpanda:latest
     container_name: redpanda-broker
+    profiles:
+      - all
     # Command to configure Redpanda for a single-node local setup
     command:
       - redpanda start
@@ -34,6 +34,8 @@ services:
   console:
     image: docker.redpanda.com/redpandadata/console:latest
     container_name: redpanda-console
+    profiles:
+      - all    
     depends_on:
       redpanda:
         condition: service_healthy

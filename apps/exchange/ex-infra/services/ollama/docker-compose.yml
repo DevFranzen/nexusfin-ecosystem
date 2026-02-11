@@ -1,6 +1,9 @@
 services:
   ollama:
     image: ollama/ollama:latest
+    profiles:
+      - all
+      - ai    
     ports:
       - "11434:11434"
     volumes:
