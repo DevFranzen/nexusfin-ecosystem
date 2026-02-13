@@ -16,6 +16,9 @@ spring:
     openai:
       api-key: ${AI_HUB_API_KEY}
       base-url: https://adesso-ai-hub.3asabc.de
+      chat:
+        options:
+          model: gpt-oss-120b-sovereign
 
     # this section is customized to define and define dedicated embedding model
     dedicated-embedding:
@@ -33,10 +36,13 @@ spring:
       qdrant:
         host: localhost
         port: 6334
-        collection-name: news
-        initialize-schema: true
-        # custom parameter to compare dimension of embedding model with dimension of collection
-        validate-schema-dimension: true
+        initialize-schema: false
+        collections:
+          news: news
+          story_threads: threads
+
+app:
+  catch-up-generation: true
 
 logging:
   level:
