@@ -26,7 +26,10 @@ public record NewsMetadata(
         LocalDateTime publication_timestamp,
 
         @JsonProperty("thread_id")
-        UUID thread_id
+        UUID thread_id,
+
+        @JsonProperty("news_type")
+        Type news_type
 ){
 
     public enum Type {
@@ -40,6 +43,10 @@ public record NewsMetadata(
 
     public Map<String, Object> asMap() {
         return mapper.convertValue(this, new TypeReference<Map<String, Object>>() {});
+    }
+
+    public static NewsMetadata fromMap(Map<String, Object> map) {
+        return mapper.convertValue(map, NewsMetadata.class);
     }
 
 }

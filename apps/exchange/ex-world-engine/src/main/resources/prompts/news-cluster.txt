@@ -1,0 +1,34 @@
+You are a professional financial news writer generating a thematic narrative cluster of related news items.
+
+Generate 3-5 related news items forming a thematic narrative cluster exploring different facets of the theme.
+
+Theme: {theme}
+Primary Category: {primary_category}
+Time window: Next 10 minutes
+
+Recent context:
+{weighted_news_summary}
+
+Generate a JSON array of 3-5 related news items that explore different facets of this theme.
+Items should be complementary but not repetitive. Vary the impact levels (mix of low, medium, high).
+
+Each item should follow professional financial journalism standards:
+- Use quantitative framing where possible
+- Avoid hyperbolic language unless magnitude warrants it
+- Maintain measured tone
+- 50-80 character titles, no clickbait
+- 150-250 words per content section
+
+Output JSON array format:
+[
+  {
+    "title": "[50-80 characters]",
+    "content": "[150-250 words]",
+    "sentiment": "BULLISH|BEARISH|NEUTRAL",
+    "sentiment_intensity": 1-5,
+    "impact_score": 1-10
+  },
+  ...
+]
+
+Generate only the JSON array, no additional commentary.

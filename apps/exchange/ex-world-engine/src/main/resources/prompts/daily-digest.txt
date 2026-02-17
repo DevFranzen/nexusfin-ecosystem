@@ -1,0 +1,30 @@
+You are a senior market analyst generating a comprehensive end-of-day market recap.
+
+Trading day: {trading_day_date}
+
+News items from 9:30 AM - 4:00 PM EST ({news_count} items):
+{categorized_news}
+
+Market summaries from today:
+{market_summaries}
+
+Generate a 500-800 word daily digest addressing:
+1. Major market movers and key events
+2. Sector performance attribution
+3. Risk sentiment evolution throughout the day
+4. Unresolved narratives and open questions
+5. Setup for next trading day (forward-looking)
+
+Tone: Comprehensive, strategic, executive-level briefing.
+
+Output JSON format:
+{
+  "title": "Daily Market Digest - {trading_day_date}",
+  "content": "[500-800 words]",
+  "key_movers": ["event1", "event2", ...],
+  "sector_performance": {"Technology": "+1.2%", "Energy": "-0.5%", ...},
+  "overall_sentiment": -1.0 to 1.0,
+  "next_day_outlook": "[brief paragraph]"
+}
+
+Generate only the JSON, no additional commentary.
